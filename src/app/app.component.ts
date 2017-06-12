@@ -1,23 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
-export class Hero{
-  id: number;
-  name: string;
-}
-
-// creates a constant array of Heroes
-const HEROES: Hero[] = [
-  { id: 11, name: 'Mr. Nice' },
-  { id: 12, name: 'Narco' },
-  { id: 13, name: 'Bombasto' },
-  { id: 14, name: 'Celeritas' },
-  { id: 15, name: 'Magneta' },
-  { id: 16, name: 'RubberMan' },
-  { id: 17, name: 'Dynama' },
-  { id: 18, name: 'Dr IQ' },
-  { id: 19, name: 'Magma' },
-  { id: 20, name: 'Tornado' }
-]
+import { Hero } from './hero';
+import { HeroService } from './hero.service';
 
 @Component({
   selector: 'my-app',
@@ -27,21 +11,14 @@ const HEROES: Hero[] = [
             <ul class="heroes">
                 <!-- putting onclick selector on each hero -->
                 <li *ngFor="let hero of heroes"
-                (click)="onSelect(hero)"
-                [class.selected]="hero === selectedHero">
+                [class.selected]="hero === selectedHero"
+                (click)="onSelect(hero)">
                 <!-- *ngFor indicates <li> element and its children consitutes a master template-->
                 <!-- let hero identifies each hero of heroes-->
                 <span class="badge">{{hero.id}}</span> {{hero.name}}
               </li>
             </ul>
-            <div *ngIf="selectedHero">
-              <h2>{{selectedHero.name}} details!</h2>
-              <div><label>id: </label>{{selectedHero.id}}</div>
-              <div>
-                <label>name: </label>
-                <input [(ngModel)]="selectedHero.name" placeholder="name">
-                </div>
-            </div>
+            <hero-detail [hero]="selectedHero"></hero-detail>
             `,
             // When the app loads, selectedHero is undefined.
             // The selected hero is initialized when the user clicks a hero's name.
@@ -95,13 +72,29 @@ const HEROES: Hero[] = [
                 margin-right: .8em;
                 border-radius: 4px 0 0 4px;
               }
-            `]
+            `],
+            providers: [HeroService]
 })
-export class AppComponent  {
+export class AppComponent implements OnInit {
   title = 'Tour of Heroes';
+  heroes: Hero[];
   selectedHero: Hero;
-  heroes = HEROES;
+
+  constructor(private heroService: HeroService) { }
+
+  getHeroes(): void {
+    this.heroService.getHeroesSlowly().then(heroes => this.heroes = heroes);
+  }
+
+  ngOnInit(): void {
+    this.getHeroes();
+  }
+
   onSelect(hero: Hero): void {
       this.selectedHero = hero;
   };
 }
+
+// To have Angular call getHeroes(), you can implement the Angular ngOnInit lifecycle hook.
+// Angular offers interfaces for tapping into critical moments in the component lifecycle: at creation, after each change, and at its
+// eventual destruction.
